@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Magicam
+Comment=Video editor for wide angle lens cameras
+Exec=/home/ak/go/src/magicam/magicam
+Icon=magicam.png
+Categories=GTK;Video Editing;
+Terminal=false

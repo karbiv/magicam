@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object class="GtkAccelGroup" id="accelGroup1"/>
+  <object class="GtkWindow" id="win">
+    <accel-groups>
+      <group name="accelGroup1"/>
+    </accel-groups>
+    <property name="type">toplevel</property>
+    <property name="title">Magicam</property>
+    <property name="default-width">1024</property>
+    <property name="default-height">576</property>
+    <signal name="destroy" handler="winDestroy"/>
+    <property name="events">
+      GDK_KEY_PRESS_MASK |
+      GDK_KEY_RELEASE_MASK
+    </property>
+    <signal name="key-press-event" handler="keyPress"/>
+    <signal name="key-release-event" handler="keyRelease"/>
+    <child>
+      <object class="GtkEventBox" id="ebox">
+        <child>
+          <object class="GtkBox" id="box">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkMenuBar" id="menubar">
+                <child>
+                  <object class="GtkMenuItem" id="file_item">
+                    <property name="label">File</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="view_item">
+                    <property name="label">View</property>
+                    <property name="submenu">view_submenu</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="pack-type">start</property>
+                <property name="expand">false</property>
+                <property name="fill">false</property>
+                <property name="padding">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkOverlay" id="overlay">
+                <signal name="button-press-event" handler="buttonPress"/>
+                <signal name="button-release-event" handler="buttonRelease"/>
+                <signal name="motion-notify-event" handler="pointerMotion"/>
+                <signal name="size-allocate" handler="sizeAllocate"/>
+                <child>
+                  <object class="GtkDrawingArea" id="pixbuf">
+                    <property name="name">pixbuf</property>
+                    <property name="events">
+                      GDK_POINTER_MOTION_MASK |
+                      GDK_BUTTON_PRESS_MASK |
+                      GDK_BUTTON_RELEASE_MASK |
+                      GDK_SCROLL_MASK
+                    </property>
+                    <property name="width-request">1024</property>
+                    <property name="height-request">576</property>
+                    <property name="expand">true</property>
+                    <signal name="draw" handler="drawPixbuf"/>
+                    <signal name="scroll-event" handler="wheel"/>                    
+                  </object>
+                </child> 
+                <child type="overlay"> 
+                  <object class="GtkDrawingArea" id="vector">
+                    <property name="name">vector</property>
+                    <property name="halign">GTK_ALIGN_FILL</property>
+                    <property name="valign">GTK_ALIGN_FILL</property>
+                    <property name="events">
+                      GDK_POINTER_MOTION_MASK |
+                      GDK_BUTTON_PRESS_MASK |
+                      GDK_BUTTON_RELEASE_MASK
+                    </property>
+                    <signal name="draw" handler="drawVector"/>
+                  </object> 
+                </child>
+              </object>
+              <packing>
+                <property name="pack-type">start</property>
+                <property name="expand">true</property>
+                <property name="fill">true</property>
+                <property name="padding">0</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="view_submenu">
+    <child>
+      <object class="GtkMenuItem" id="fit_window_item">
+        <property name="label">Fit to window</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="fullscreen_item">
+        <property name="label">Fullscreen toggle</property>
+      </object>
+    </child>
+  </object>
+</interface>
