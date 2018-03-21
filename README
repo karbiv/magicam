@@ -1,7 +1,10 @@
 
-"go run magicam.go"
+```
+go run magicam.go
+```
 
-Left mouse dragging. Arrow keys image panning.
+Left mouse button - dragging.
+Arrow keys - image panning.
 
 Keys.
 
