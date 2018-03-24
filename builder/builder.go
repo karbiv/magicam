@@ -4,13 +4,13 @@ import (
 	. "fmt"
 	"log"
 	"github.com/gotk3/gotk3/gtk"
-	"karbiv/magicam/app"
-	"karbiv/magicam/accel"
-	"karbiv/magicam/keys"
-	"karbiv/magicam/widgets/drawpix"
-	"karbiv/magicam/widgets/drawvec"
-	"karbiv/magicam/widgets/overlay"
-	"karbiv/magicam/widgets/win" 
+	"github.com/karbiv/magicam/app"
+	"github.com/karbiv/magicam/accel"
+	"github.com/karbiv/magicam/keys"
+	"github.com/karbiv/magicam/widgets/drawpix"
+	"github.com/karbiv/magicam/widgets/drawvec"
+	"github.com/karbiv/magicam/widgets/overlay"
+	"github.com/karbiv/magicam/widgets/win" 
 )
 
 var (

@@ -2,7 +2,7 @@ package win
 
 import (
 	"github.com/gotk3/gotk3/gtk"
-	"karbiv/magicam/app"
+	"github.com/karbiv/magicam/app"
 )
 
 var (

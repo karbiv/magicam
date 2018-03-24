@@ -5,10 +5,10 @@ import (
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
-	"karbiv/magicam/app"
-	"karbiv/magicam/widgets/drawpix"
-	"karbiv/magicam/widgets/drawvec"
-	"karbiv/magicam/widgets/win"
+	"github.com/karbiv/magicam/app"
+	"github.com/karbiv/magicam/widgets/drawpix"
+	"github.com/karbiv/magicam/widgets/drawvec"
+	"github.com/karbiv/magicam/widgets/win"
 )
 
 var (

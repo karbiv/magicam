@@ -6,9 +6,9 @@ import (
 	"os"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
-	"karbiv/magicam/app"
-	"karbiv/magicam/builder"
-	"karbiv/magicam/bufs"
+	"github.com/karbiv/magicam/app"
+	"github.com/karbiv/magicam/builder"
+	"github.com/karbiv/magicam/bufs"
 )
 
 func main() {

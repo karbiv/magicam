@@ -4,9 +4,9 @@ import (
 	//. "fmt"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
-	"karbiv/magicam/app"
-	"karbiv/magicam/bufs"
-	"karbiv/magicam/widgets/drawpix"
+	"github.com/karbiv/magicam/app"
+	"github.com/karbiv/magicam/bufs"
+	"github.com/karbiv/magicam/widgets/drawpix"
 )
 
 var (

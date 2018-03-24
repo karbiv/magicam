@@ -6,7 +6,7 @@ import (
 	. "fmt"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/gotk3/gotk3/gdk"
-	"karbiv/magicam/app"
+	"github.com/karbiv/magicam/app"
 )
 
 func SetAccels() {
