@@ -1,7 +1,6 @@
 package main
 
 import (
-	//. "fmt"
 	"log"
 	"os"
 	"github.com/gotk3/gotk3/glib"
@@ -9,6 +8,8 @@ import (
 	"github.com/karbiv/magicam/app"
 	"github.com/karbiv/magicam/builder"
 	"github.com/karbiv/magicam/bufs"
+	//. "fmt"
+	//"reflect"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 
 	application.Connect("activate", activateHandler)
 	status := application.Run(os.Args)
-	app.Application = application	
+	app.Application = application
 	gtk.Main()
 	os.Exit(status)
 }
@@ -30,5 +31,5 @@ func activateHandler(application *gtk.Application) {
 	builder.InitApp()
 	bufs.InitBuffers()
 	app.Window.ShowAll()
-	app.Window.Maximize()
+	app.Window.Maximize() 
 }

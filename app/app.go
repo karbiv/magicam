@@ -13,4 +13,8 @@ var (
 	Pixels      *gtk.DrawingArea
 	Vector      *gtk.DrawingArea
 	Accels      *gtk.AccelGroup
+
+	// DEV:
+	GraphPixel *gtk.MenuItem
+	
 )

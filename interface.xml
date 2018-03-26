@@ -29,9 +29,20 @@
                   </object>
                 </child>
                 <child>
+                  <object class="GtkMenuItem" id="edit_item">
+                    <property name="label">Edit</property>
+                  </object>
+                </child>
+                <child>
                   <object class="GtkMenuItem" id="view_item">
                     <property name="label">View</property>
                     <property name="submenu">view_submenu</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="graph_item">
+                    <property name="label">Graph</property>
+                    <property name="submenu">graph_submenu</property>
                   </object>
                 </child>
               </object>
@@ -90,7 +101,7 @@
       </object>
     </child>
   </object>
-  <object class="GtkMenu" id="view_submenu">
+  <object class="GtkMenu" id="view_submenu"> 
     <child>
       <object class="GtkMenuItem" id="fit_window_item">
         <property name="label">Fit to window</property>
@@ -99,6 +110,13 @@
     <child>
       <object class="GtkMenuItem" id="fullscreen_item">
         <property name="label">Fullscreen toggle</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="graph_submenu">
+    <child>
+      <object class="GtkMenuItem" id="pixel_radius">
+        <property name="label">Pixel Radius</property>
       </object>
     </child>
   </object>

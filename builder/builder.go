@@ -1,7 +1,6 @@
 package builder
 
 import (
-	. "fmt"
 	"log"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/karbiv/magicam/app"
@@ -10,7 +9,10 @@ import (
 	"github.com/karbiv/magicam/widgets/drawpix"
 	"github.com/karbiv/magicam/widgets/drawvec"
 	"github.com/karbiv/magicam/widgets/overlay"
-	"github.com/karbiv/magicam/widgets/win" 
+	"github.com/karbiv/magicam/widgets/win"
+	"github.com/karbiv/magicam/graph"
+	. "fmt"
+	//"reflect"
 )
 
 var (
@@ -18,7 +20,7 @@ var (
 )
 
 func InitApp() {
-	Println("InitApp()")
+	Println("InitApp() start")
 	initBuilder()
 	connectSignalFuncs()
 	initWindow()
@@ -26,6 +28,8 @@ func InitApp() {
 	initDrawPix()
 	initDrawVec()
 	initAccelGroup()
+	initGraphMenuItem()
+	Println("InitApp() end")
 }
 
 func connectSignalFuncs() {
@@ -95,4 +99,14 @@ func initAccelGroup() {
 	} else {
 		log.Fatal("Unable to create AccelGroup.")
 	}
+}
+
+func initGraphMenuItem() {
+	_graphPixel, _ := app.Builder.GetObject("pixel_radius")
+	if graphPixel, ok := _graphPixel.(*gtk.MenuItem); ok {
+		app.GraphPixel = graphPixel
+	} else {
+		log.Fatal("Error: Unable to init Graph Menu.")
+	}
+	app.GraphPixel.Connect("activate", graph.PixelGraphMenuItem)
 }

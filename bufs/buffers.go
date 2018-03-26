@@ -6,6 +6,7 @@ import (
 	"log"
 	. "math"
 	//"time"
+	//"os"
 )
 
 var (
@@ -51,6 +52,7 @@ func UpdateViewPixels() {
 
 func getNewRadius(x, y float64) float64 {
 	r := Hypot(float64(x), float64(y))
+	//newR := maxR * Tan(r/maxR) // basic demo function
 	newR := maxR * Tan(r/maxR)
 	return newR
 }
