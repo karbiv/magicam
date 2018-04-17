@@ -21,17 +21,30 @@ var (
 	MaxViewScale                 float64 = 1.5
 	MinViewScale                 float64 = 5
 	coeff                                = 1.03
-	maxR                                 = 0.0
+	MaxR                                 = 0.0
+	MaxNewR                              = 0.0
+	MaxRadiusAngle                       = 0.0
 	pixmap                       *gdk.Pixbuf
 	tm, rm, bm, lm               []int // margins
+
+	orig_bytes    []byte
+	rowstride     int
+	width, height int
+	halfW, halfH  int
+	MaxW, MaxH    int
+	Graph         []float64
+
+	// enough length to contain all radius coeffs
+	RadiusGraph [2000]float64
 )
 
 func InitBuffers() {
+	Println("InitBuffers()")
 	GetOrig()
+	initFrameData()
 	DoPixels()
 	UpdateViewPixels()
 	VectorCenterX, VectorCenterY = View.GetWidth()/2, View.GetHeight()/2
-	Println("InitBuffers()")
 }
 
 func GetOrig() {
@@ -42,7 +55,8 @@ func GetOrig() {
 	}
 }
 
-func GetTransform(width int, height int) {
+func InitTransformPixbuf(width int, height int) {
+	Println("InitTransformPixbuf")
 	Transform, _ = gdk.PixbufNew(gdk.COLORSPACE_RGB, true, 8, width, height)
 }
 
@@ -52,28 +66,43 @@ func UpdateViewPixels() {
 
 func getNewRadius(x, y float64) float64 {
 	r := Hypot(float64(x), float64(y))
-	//newR := maxR * Tan(r/maxR) // basic demo function
-	newR := maxR * Tan(r/maxR)
+	//newR := MaxR * Tan(r/MaxR) // basic demo function
+	newR := r * Graph[int(r)]
+
 	return newR
 }
 
+func initFrameData() {
+	orig_bytes = Orig.GetPixels()
+	rowstride = Orig.GetRowstride()
+	width, height = Orig.GetWidth(), Orig.GetHeight()
+	halfW, halfH = width/2, height/2
+	MaxR = Hypot(float64(halfW), float64(halfH))
+	Graph = make([]float64, int(MaxR)+1)
+	for i, _ := range Graph {
+		Graph[i] = 1.0
+	}
+	MaxNewR = getNewRadius(float64(halfW), float64(halfH))
+	SetTransformBufSize(MaxNewR)
+}
+
+func SetTransformBufSize(maxNewR float64) {
+	Println("SetTransformBufSize(maxNewR float64)")
+	MaxNewR = maxNewR
+	MaxRadiusAngle = Atan2(float64(halfH), float64(halfW))
+	MaxW, MaxH = int(maxNewR*Cos(MaxRadiusAngle))*2, int(maxNewR*Sin(MaxRadiusAngle))*2
+}
+
 func DoPixels() {
-	orig_bytes := Orig.GetPixels()
-	rowstride := Orig.GetRowstride()
-	width, height := Orig.GetWidth(), Orig.GetHeight()
-	halfW, halfH := width/2, height/2
-	maxR = Hypot(float64(halfW), float64(halfH))
-	maxNewR := getNewRadius(float64(halfW), float64(halfH))
-	maxAngle := Atan2(float64(halfH), float64(halfW))
-	maxW, maxH := int(maxNewR*Cos(maxAngle))*2, int(maxNewR*Sin(maxAngle))*2
-	GetTransform(maxW, maxH)
-	halfTW, halfTH := float64(maxW/2), float64(maxH/2)
+	Println("DoPixels()")
+	InitTransformPixbuf(MaxW, MaxH)
+	halfTW, halfTH := float64(MaxW/2), float64(MaxH/2)
 	transform_bytes := Transform.GetPixels()
 	tRowstride := Transform.GetRowstride()
 
-	pixmap := make([]byte, maxW*maxH)
-	tm, bm = make([]int, maxW), make([]int, maxW)
-	rm, lm = make([]int, maxH), make([]int, maxH)
+	pixmap := make([]byte, MaxW*MaxH)
+	tm, bm = make([]int, MaxW), make([]int, MaxW)
+	rm, lm = make([]int, MaxH), make([]int, MaxH)
 	for i, _ := range tm {
 		tm[i], bm[i] = -1, -1
 	}
@@ -82,6 +111,8 @@ func DoPixels() {
 	}
 	heightm1 := height - 1
 	widthm1 := width - 1
+	// TODO precompute array of radius coeffs
+	// It's needed to be updated from UI sliders
 	for y := 0; y < height; y++ {
 		row_start := y * rowstride
 		ry := y - halfH
@@ -94,7 +125,7 @@ func DoPixels() {
 
 			boffset := row_start + x*4
 			doffset := newY*tRowstride + newX*4
-			map_offset := newY*maxW + newX
+			map_offset := newY*MaxW + newX
 
 			if y == 0 {
 				tm[newX] = newY
@@ -115,7 +146,7 @@ func DoPixels() {
 		}
 	}
 	InterpolateMargins() // tm, rm, bm, lm
-	Interpolate(pixmap, maxW, maxH)
+	Interpolate(pixmap, MaxW, MaxH)
 }
 
 type rgba struct {
@@ -145,7 +176,7 @@ func Interpolate(pixmap []byte, w int, h int) {
 var (
 	//   212
 	//   1X1
-	//   212	
+	//   212
 	ring1Wght = 0.60
 	ring2Wght = 0.40
 )
@@ -154,9 +185,9 @@ func getInterpolatedPixel(dest int, chans []byte, mapWidth int, rowstride int,
 	pixmap []byte, mapIdx int) (ip rgba) {
 
 	var (
-		pixels1 [4]rgba
-		pixels2 [4]rgba
-		count1, count2  byte
+		pixels1        [4]rgba
+		pixels2        [4]rgba
+		count1, count2 byte
 	)
 
 	// ring 1
@@ -216,7 +247,7 @@ func getInterpolatedPixel(dest int, chans []byte, mapWidth int, rowstride int,
 	}
 
 	countF1, countF2 := float64(count1), float64(count2)
-	
+
 	r1 = (r1 / countF1) * ring1Wght
 	g1 = (g1 / countF1) * ring1Wght
 	b1 = (b1 / countF1) * ring1Wght
