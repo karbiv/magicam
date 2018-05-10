@@ -1,12 +1,16 @@
 package bufs
 
+// #cgo pkg-config: gtk+-3.0
+// #include <gtk/gtk.h>
+import "C"
 import (
-	. "fmt"
 	"github.com/gotk3/gotk3/gdk"
 	"log"
 	. "math"
 	//"time"
 	//"os"
+	"unsafe"
+	//. "fmt"
 )
 
 var (
@@ -25,21 +29,23 @@ var (
 	MaxNewR                              = 0.0
 	MaxRadiusAngle                       = 0.0
 	pixmap                       *gdk.Pixbuf
-	tm, rm, bm, lm               []int // margins
+	topMargin, rightMargin       []int // margins
+	bottomMargin, leftMargin     []int // margins
 
-	orig_bytes    []byte
+	origBytes     []byte
+	origNumChans  int
 	rowstride     int
 	width, height int
 	halfW, halfH  int
-	MaxW, MaxH    int
+	TW, TH        int
 	Graph         []float64
 
 	// enough length to contain all radius coeffs
-	RadiusGraph [2000]float64
+	RadiusGraph          [2000]float64
+	CurrentViewScale     float64 = 1.0 // scale coeff
 )
 
 func InitBuffers() {
-	Println("InitBuffers()")
 	GetOrig()
 	initFrameData()
 	DoPixels()
@@ -53,15 +59,17 @@ func GetOrig() {
 	if err != nil {
 		log.Fatal("Unable to create Pixbuf: ", err)
 	}
-}
-
-func InitTransformPixbuf(width int, height int) {
-	Println("InitTransformPixbuf")
-	Transform, _ = gdk.PixbufNew(gdk.COLORSPACE_RGB, true, 8, width, height)
+	origNumChans = Orig.GetNChannels()
 }
 
 func UpdateViewPixels() {
-	View, _ = gdk.PixbufCopy(Transform)
+	// Restore View buffer scale after Transform buffer has been recreated
+	w, h := Transform.GetWidth(), Transform.GetHeight()
+	nw, nh := int(float64(w)*CurrentViewScale), int(float64(h)*CurrentViewScale)
+	View, _ = Transform.ScaleSimple(nw, nh, gdk.INTERP_BILINEAR)
+	//bufs.View, _ = bufs.Transform.ScaleSimple(nw, nh, gdk.INTERP_NEAREST) // faster
+	
+	//View, _ = gdk.PixbufCopy(Transform)
 }
 
 func getNewRadius(x, y float64) float64 {
@@ -73,7 +81,7 @@ func getNewRadius(x, y float64) float64 {
 }
 
 func initFrameData() {
-	orig_bytes = Orig.GetPixels()
+	origBytes = Orig.GetPixels()
 	rowstride = Orig.GetRowstride()
 	width, height = Orig.GetWidth(), Orig.GetHeight()
 	halfW, halfH = width/2, height/2
@@ -87,32 +95,36 @@ func initFrameData() {
 }
 
 func SetTransformBufSize(maxNewR float64) {
-	Println("SetTransformBufSize(maxNewR float64)")
 	MaxNewR = maxNewR
 	MaxRadiusAngle = Atan2(float64(halfH), float64(halfW))
-	MaxW, MaxH = int(maxNewR*Cos(MaxRadiusAngle))*2, int(maxNewR*Sin(MaxRadiusAngle))*2
+	TW, TH = int(maxNewR*Cos(MaxRadiusAngle))*2, int(maxNewR*Sin(MaxRadiusAngle))*2
+	Transform, _ = gdk.PixbufNew(gdk.COLORSPACE_RGB, true, 8, TW, TH)
 }
 
 func DoPixels() {
-	Println("DoPixels()")
-	InitTransformPixbuf(MaxW, MaxH)
-	halfTW, halfTH := float64(MaxW/2), float64(MaxH/2)
-	transform_bytes := Transform.GetPixels()
+	halfTW, halfTH := float64(TW/2), float64(TH/2)
+	transformBytes := Transform.GetPixels()
 	tRowstride := Transform.GetRowstride()
 
-	pixmap := make([]byte, MaxW*MaxH)
-	tm, bm = make([]int, MaxW), make([]int, MaxW)
-	rm, lm = make([]int, MaxH), make([]int, MaxH)
-	for i, _ := range tm {
-		tm[i], bm[i] = -1, -1
+	// Clear Transform PixBuf
+	p := unsafe.Pointer(Transform.Native())
+	C.gdk_pixbuf_fill((*C.GdkPixbuf)(p), C.guint32(0))
+
+	pixmap := make([]byte, TW*TH)
+	topMargin, bottomMargin = make([]int, TW), make([]int, TW)
+	rightMargin, leftMargin = make([]int, TH), make([]int, TH)
+	for i, _ := range topMargin {
+		topMargin[i], bottomMargin[i] = -1, -1
 	}
-	for i, _ := range lm {
-		lm[i], rm[i] = -1, -1
+	for i, _ := range leftMargin {
+		leftMargin[i], rightMargin[i] = -1, -1
 	}
+
 	heightm1 := height - 1
 	widthm1 := width - 1
-	// TODO precompute array of radius coeffs
-	// It's needed to be updated from UI sliders
+
+	// loops over all pixels of original frame
+	// set adjusted pixels in the Transform Pixbuf
 	for y := 0; y < height; y++ {
 		row_start := y * rowstride
 		ry := y - halfH
@@ -123,30 +135,35 @@ func DoPixels() {
 			newX := int(newR*Cos(angle) + halfTW)
 			newY := int(newR*Sin(angle) + halfTH)
 
-			boffset := row_start + x*4
-			doffset := newY*tRowstride + newX*4
-			map_offset := newY*MaxW + newX
+			mapOffset := newY*TW + newX
 
+			// margins pixels as boundaries, in 4 arrays
 			if y == 0 {
-				tm[newX] = newY
+				topMargin[newX] = newY
 			} else if y == heightm1 {
-				bm[newX] = newY
+				bottomMargin[newX] = newY
 			}
 			if x == 0 {
-				lm[newY] = newX
+				leftMargin[newY] = newX
 			} else if x == widthm1 {
-				rm[newY] = newX
+				rightMargin[newY] = newX
 			}
 
-			pixmap[map_offset] = 1
-			transform_bytes[doffset] = orig_bytes[boffset]
-			transform_bytes[doffset+1] = orig_bytes[boffset+1]
-			transform_bytes[doffset+2] = orig_bytes[boffset+2]
-			transform_bytes[doffset+3] = orig_bytes[boffset+3]
+			pixmap[mapOffset] = 1
+
+			offset := row_start + x*origNumChans
+			tOffset := newY*tRowstride + newX*4
+
+			// pixel channels in Orig pixbuf
+			for channel := 0; channel < origNumChans; channel++ {
+				transformBytes[tOffset+channel] = origBytes[offset+channel]
+			}
+			// Alpha channel, 8 bit sample
+			transformBytes[tOffset+3] = 255
 		}
 	}
-	InterpolateMargins() // tm, rm, bm, lm
-	Interpolate(pixmap, MaxW, MaxH)
+	InterpolateMargins() // topMargin, rightMargin, bottomMargin, leftMargin
+	Interpolate(pixmap, TW, TH)
 }
 
 type rgba struct {
@@ -160,7 +177,8 @@ func Interpolate(pixmap []byte, w int, h int) {
 		map_pos := y * w
 		row_pos := y * rowstride
 		for x := 0; x < w; x++ {
-			if pixmap[map_pos+x] != 1 && y > tm[x] && y < bm[x] && x > lm[y] && x < rm[y] {
+			if pixmap[map_pos+x] != 1 &&
+				y > topMargin[x] && y < bottomMargin[x] && x > leftMargin[y] && x < rightMargin[y] {
 				dest := row_pos + x*4
 				ip := getInterpolatedPixel(dest, chans, w, rowstride, pixmap, map_pos+x)
 				chans[dest] = ip.r
@@ -265,36 +283,36 @@ func getInterpolatedPixel(dest int, chans []byte, mapWidth int, rowstride int,
 }
 
 func InterpolateMargins() {
-	tm[0] = 0
-	rm[0] = 0
-	bm[0] = 0
-	lm[0] = 0
-	currT := tm[0]
-	currR := rm[0]
-	currB := bm[0]
-	currL := lm[0]
-	for i := 0; i < len(tm); i++ {
-		if tm[i] < 0 {
-			tm[i] = currT
+	topMargin[0] = 0
+	rightMargin[0] = 0
+	bottomMargin[0] = 0
+	leftMargin[0] = 0
+	currT := topMargin[0]
+	currR := rightMargin[0]
+	currB := bottomMargin[0]
+	currL := leftMargin[0]
+	for i := 0; i < len(topMargin); i++ {
+		if topMargin[i] < 0 {
+			topMargin[i] = currT
 		} else {
-			currT = tm[i]
+			currT = topMargin[i]
 		}
-		if bm[i] < 0 {
-			bm[i] = currB
+		if bottomMargin[i] < 0 {
+			bottomMargin[i] = currB
 		} else {
-			currB = bm[i]
+			currB = bottomMargin[i]
 		}
 	}
-	for i := 0; i < len(rm); i++ {
-		if rm[i] < 0 {
-			rm[i] = currR
+	for i := 0; i < len(rightMargin); i++ {
+		if rightMargin[i] < 0 {
+			rightMargin[i] = currR
 		} else {
-			currR = rm[i]
+			currR = rightMargin[i]
 		}
-		if lm[i] < 0 {
-			lm[i] = currL
+		if leftMargin[i] < 0 {
+			leftMargin[i] = currL
 		} else {
-			currL = lm[i]
+			currL = leftMargin[i]
 		}
 	}
 }

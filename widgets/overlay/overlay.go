@@ -4,8 +4,8 @@ import (
 	//. "fmt"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
-	"github.com/karbiv/magicam/app"
-	"github.com/karbiv/magicam/bufs"
+	// "github.com/karbiv/magicam/app"
+	// "github.com/karbiv/magicam/bufs"
 	"github.com/karbiv/magicam/widgets/drawpix"
 )
 
@@ -15,21 +15,27 @@ var (
 )
 
 // "size-allocate"
+// this deforms PixBuf
+// func SizeAllocateHandler(widget *gtk.Overlay, ptr uintptr) {
+// 	rect := gdk.WrapRectangle(ptr)
+// 	rw, rh := rect.GetWidth(), rect.GetHeight()
+// 	bufs.UpdateViewPixels()
+// 	transformRatio := float64(bufs.Transform.GetWidth()) / float64(bufs.Transform.GetHeight())
+// 	rectRatio := float64(rw) / float64(rh)
+// 	if rectRatio > transformRatio {
+// 		bufs.View, _ = bufs.View.ScaleSimple(
+// 			int(float64(rh)*transformRatio), rh, gdk.INTERP_BILINEAR)
+// 	} else {
+// 		bufs.View, _ = bufs.View.ScaleSimple(
+// 			rw, int(float64(rw)*transformRatio), gdk.INTERP_BILINEAR)
+// 	}
+// 	bufs.CurrViewX, bufs.CurrViewY = 0, 0
+// 	app.Overlay.QueueDraw()
+// }
+
+// "size-allocate"
 func SizeAllocateHandler(widget *gtk.Overlay, ptr uintptr) {
-	rect := gdk.WrapRectangle(ptr)
-	rw, rh := rect.GetWidth(), rect.GetHeight()
-	bufs.UpdateViewPixels()
-	transformRatio := float64(bufs.Transform.GetWidth()) / float64(bufs.Transform.GetHeight())
-	rectRatio := float64(rw) / float64(rh)
-	if rectRatio > transformRatio {
-		bufs.View, _ = bufs.View.ScaleSimple(
-			int(float64(rh)*transformRatio), rh, gdk.INTERP_BILINEAR)
-	} else {
-		bufs.View, _ = bufs.View.ScaleSimple(
-			rw, int(float64(rw)*transformRatio), gdk.INTERP_BILINEAR)
-	}
-	bufs.CurrViewX, bufs.CurrViewY = 0, 0
-	app.Overlay.QueueDraw()
+	
 }
 
 // "button-press-event"

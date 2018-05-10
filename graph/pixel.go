@@ -2,11 +2,6 @@ package graph
 
 // #cgo pkg-config: gtk+-3.0
 // #include <gtk/gtk.h>
-/*
-int mytest(int i) {
-  return i+1;
-}
-*/
 import "C"
 import (
 	. "fmt"
@@ -20,7 +15,7 @@ import (
 )
 
 var (
-	numOfPoints = 7
+	numOfPoints = 32
 	scales      []*gtk.Scale
 )
 
@@ -34,7 +29,7 @@ func PixelGraphMenuItem(graphItem *gtk.MenuItem) {
 	graphWin.Add(grid)
 
 	for i := 0; i < numOfPoints; i++ {
-		scale, _ := gtk.ScaleNewWithRange(gtk.ORIENTATION_VERTICAL, 0, 3.2, 0.05)
+		scale, _ := gtk.ScaleNewWithRange(gtk.ORIENTATION_VERTICAL, 0, 3.7, 0.05)
 		scale.SetValue(1.0) // TODO check buffered/saved values
 		scale.SetIncrements(0.01, 0.05)
 		scale.Connect("value-changed", valueChanged)

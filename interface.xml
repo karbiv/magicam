@@ -9,13 +9,16 @@
     <property name="title">Magicam</property>
     <property name="default-width">1024</property>
     <property name="default-height">576</property>
-    <signal name="destroy" handler="winDestroy"/>
     <property name="events">
       GDK_KEY_PRESS_MASK |
-      GDK_KEY_RELEASE_MASK
+      GDK_KEY_RELEASE_MASK |
+      GDK_SCROLL_MASK
     </property>
+    <signal name="destroy" handler="winDestroy"/>
+    <signal name="scroll-event" handler="wheel"/>
     <signal name="key-press-event" handler="keyPress"/>
     <signal name="key-release-event" handler="keyRelease"/>
+    <signal name="check-resize" handler="checkResize"/>
     <child>
       <object class="GtkEventBox" id="ebox">
         <child>
@@ -72,10 +75,9 @@
                     <property name="height-request">576</property>
                     <property name="expand">true</property>
                     <signal name="draw" handler="drawPixbuf"/>
-                    <signal name="scroll-event" handler="wheel"/>                    
                   </object>
-                </child> 
-                <child type="overlay"> 
+                </child>
+                <child type="overlay">
                   <object class="GtkDrawingArea" id="vector">
                     <property name="name">vector</property>
                     <property name="halign">GTK_ALIGN_FILL</property>
@@ -86,7 +88,7 @@
                       GDK_BUTTON_RELEASE_MASK
                     </property>
                     <signal name="draw" handler="drawVector"/>
-                  </object> 
+                  </object>
                 </child>
               </object>
               <packing>
@@ -101,7 +103,7 @@
       </object>
     </child>
   </object>
-  <object class="GtkMenu" id="view_submenu"> 
+  <object class="GtkMenu" id="view_submenu">
     <child>
       <object class="GtkMenuItem" id="fit_window_item">
         <property name="label">Fit to window</property>

@@ -31,5 +31,5 @@ func activateHandler(application *gtk.Application) {
 	builder.InitApp()
 	bufs.InitBuffers()
 	app.Window.ShowAll()
-	app.Window.Maximize() 
+	app.Window.Maximize()
 }

@@ -20,7 +20,7 @@ var (
 )
 
 func InitApp() {
-	Println("InitApp() start")
+	Println("InitApp()")
 	initBuilder()
 	connectSignalFuncs()
 	initWindow()
@@ -29,10 +29,10 @@ func InitApp() {
 	initDrawVec()
 	initAccelGroup()
 	initGraphMenuItem()
-	Println("InitApp() end")
 }
 
 func connectSignalFuncs() {
+	signalFuncs["checkResize"] = win.CheckResize
 	signalFuncs["winDestroy"] = win.DestroyHandler
 	signalFuncs["drawPixbuf"] = drawpix.DrawPixbufHandler
 	signalFuncs["drawVector"] = drawvec.DrawVectorHandler
